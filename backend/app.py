@@ -57,9 +57,9 @@ def data():
             'lastName' :lastName,
             'emailId' :emailId
         })
-    #show all the users
+#show all the users
     if request.method == 'GET' :
-        allData = db['users'].find()
+        allData = db['users'].find() #ici users est un nom de tableau et .find() permet de recuperer tous les documents
         dataJson = []
         for data in allData:
             id = data['id']
@@ -69,10 +69,56 @@ def data():
 
             dataDict = {
                 "id":str(id),
-                "firsName":firstName,
+                "firstName":firstName,
                 "emailId":emailId,
             }
-              
+            dataJson.append(dataDict)
+        print(dataJson)
+        return jsonify(dataJson)
+    
+#get put delete
+@app.route('/users/string:id>' ,methods=['GET','PUT','DELETE'])
+def onedata(id):
+#GET
+    if request.method == 'GET':
+        data =  db['users'].find_one({"_id":ObjectId(id)}) #ObjectId(id) convertit une chaîne en identifiant MongoDB
+        id = data['_id']
+        firstName = data['firstName']
+        lastName = data['lastName']
+        emailId = data['emailId']
+
+        dataDict = {
+            "id":str(id),
+            "firstName":firstName,
+            "lastName":lastName,
+            "emailId":emailId,
+        }
+        return jsonify(dataDict)
+#delete
+    if request.method == 'DELETE' :
+        db['users'].delete_many({"_id":ObjectId(id)})
+        return jsonify({
+            "status":"Data id:" + id + "is deleted"
+        })
+#put
+    if request.method == 'PUT' :
+        body = request.json
+        firstName =body['firstName']
+        lastName =body['lastName']
+        emailId =body['emailId']
+        
+        db['users'].update_one(
+           { "_id":ObjectId(id)},
+           { 
+               "$set": {
+                   "firstName":firstName,
+                   "lastName":lastName,
+                   "emailId": emailId
+               }
+           }
+        )
+
+#on installe (boostrap axios et react-router-dom dans frontend)
               
 # Lance le serveur Flask en mode debug (redémarrage automatique si tu modifies le code).
 if __name__=='__main__':
